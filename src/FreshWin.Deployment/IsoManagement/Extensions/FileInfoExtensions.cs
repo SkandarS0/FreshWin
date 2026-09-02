@@ -5,10 +5,6 @@ namespace FreshWin.Deployment.IsoManagement.Extensions
 {
     public static class FileInfoExtensions
     {
-        static FileInfoExtensions()
-        {
-
-        }
         public static bool IsIsoUdf(this FileInfo isoPath)
         {
             using var isoStream = isoPath.OpenRead();
