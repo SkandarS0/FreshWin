@@ -17,7 +17,7 @@ namespace FreshWin.Deployment.IsoManagement.Extensions
 
         public static bool IsNotIsoUdf(this FileInfo isoPath) => !isoPath.IsIsoUdf();
 
-        public static async Task ExtractIsoToDirectory(this FileInfo isoPath, DirectoryInfo destinationPath, IProgress<IsoExtractionProgress>? progress = null, CancellationToken cancellationToken = default)
+        public static async Task ExtractIsoToDirectory(this FileInfo isoPath, DirectoryInfo destinationPath, IProgress<IsoExtractionProgress>? progress = null, bool overwriteExistingFiles = false, CancellationToken cancellationToken = default)
         {
             if (!isoPath.Exists)
             {
@@ -34,7 +34,7 @@ namespace FreshWin.Deployment.IsoManagement.Extensions
             }
 
             // Perform the extraction
-            await IsoExtraction.Extract(isoPath.FullName, destinationPath.FullName, progress, cancellationToken);
+            await IsoExtraction.Extract(isoPath.FullName, destinationPath.FullName, progress, overwriteExistingFiles, cancellationToken);
         }
     }
 }

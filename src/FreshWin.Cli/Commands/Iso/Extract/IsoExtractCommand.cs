@@ -54,7 +54,7 @@ namespace FreshWin.Cli.Commands.Iso.Extract
                 var task = ctx.AddTask("Extracting ISO");
                 var progress = new Progress<IsoExtractionProgress>(p => task.Value = p.Percent);
 
-                await settings.IsoPath.ExtractIsoToDirectory(settings.DestinationPath, progress, cancellationToken);
+                await settings.IsoPath.ExtractIsoToDirectory(settings.DestinationPath, progress, settings.Overwrite, cancellationToken);
             });
 
             return 0;

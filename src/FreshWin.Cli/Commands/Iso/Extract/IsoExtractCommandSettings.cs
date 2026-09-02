@@ -16,5 +16,9 @@ namespace FreshWin.Cli.Commands.Iso.Extract
         [CommandOption("-y|--create-destination")]
         [Description("Create the destination directory if it doesn't already exist")]
         public bool CreateDestination { get; set; }
+
+        [CommandOption("--overwrite")]
+        [Description("Overwrite existing files in the destination directory")]
+        public bool Overwrite { get; set; }
     }
 }
