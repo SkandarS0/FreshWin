@@ -38,7 +38,7 @@ namespace FreshWin.Cli.Commands.Iso.Extract
             {
                 bool shouldCreate = settings.CreateDestination
                     || AnsiConsole.Confirm(
-                        $"Destination directory [yellow]{settings.DestinationPath.FullName}[/] does not exist. Create it?");
+                        $"Destination directory [yellow]{Markup.Escape(settings.DestinationPath.FullName)}[/] does not exist. Create it?");
 
                 if (!shouldCreate)
                 {
