@@ -28,6 +28,12 @@ namespace FreshWin.Cli.Commands.Iso.Extract
                     settings.IsoPath.DirectoryName!,
                     Path.GetFileNameWithoutExtension(settings.IsoPath.Name)));
 
+            if (File.Exists(settings.DestinationPath.FullName))
+            {
+                AnsiConsole.MarkupLine("[red]Extraction cancelled — destination path is a file.[/]");
+                return 1;
+            }
+
             if (!settings.DestinationPath.Exists)
             {
                 bool shouldCreate = settings.CreateDestination
