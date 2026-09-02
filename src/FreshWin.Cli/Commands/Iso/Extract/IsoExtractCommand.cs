@@ -1,6 +1,5 @@
 ﻿
 using FreshWin.Deployment.IsoManagement;
-using FreshWin.Deployment.IsoManagement.Exceptions;
 using FreshWin.Deployment.IsoManagement.Extensions;
 using Spectre.Console;
 using Spectre.Console.Cli;
@@ -47,7 +46,9 @@ namespace FreshWin.Cli.Commands.Iso.Extract
 
             if (settings.IsoPath.IsNotIsoUdf())
             {
-                throw new IsoFileNotUdfException(settings.IsoPath);
+                AnsiConsole.MarkupLine($"[red]Extraction cancelled — ISO file is not a valid UDF ISO:[/] [yellow]{Markup.Escape(settings.IsoPath.FullName)}[/]");
+                exitCode = 1;
+                return false;
             }
 
             settings.DestinationPath ??= new DirectoryInfo(
