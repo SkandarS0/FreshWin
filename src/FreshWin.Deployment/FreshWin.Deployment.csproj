@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="LTRData.DiscUtils.Udf" Version="1.0.88" />
+  </ItemGroup>
+
 </Project>
