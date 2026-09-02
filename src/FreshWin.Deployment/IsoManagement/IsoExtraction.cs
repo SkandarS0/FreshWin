@@ -4,61 +4,77 @@ namespace FreshWin.Deployment.IsoManagement
 {
     public static class IsoExtraction
     {
-        public static void Extract(string isoPath, string destination, IProgress<IsoExtractionProgress>? progress = null)
+        public static async Task Extract(string isoPath, string destination, IProgress<IsoExtractionProgress>? progress = null, CancellationToken cancellationToken = default)
         {
             using FileStream isoStream = File.OpenRead(isoPath);
             using UdfReader reader = new(isoStream);
 
             long totalBytes = GetTotalSize(reader, "");
-            long copiedBytes = 0;
+            var state = new ExtractionState();
 
-            ExtractDirectory(reader, "", destination, ref copiedBytes, totalBytes, progress);
+            await ExtractDirectory(reader, "", destination, state, totalBytes, progress, cancellationToken);
         }
 
-        private static void ExtractDirectory(UdfReader reader, string sourceDir, string destDir, ref long copiedBytes, long totalBytes, IProgress<IsoExtractionProgress>? progress)
+        private static async Task ExtractDirectory(UdfReader reader, string sourceDir, string destDir, ExtractionState state, long totalBytes, IProgress<IsoExtractionProgress>? progress, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             Directory.CreateDirectory(destDir);
 
             foreach (string filePath in reader.GetFiles(sourceDir))
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 string destPath = Path.Combine(destDir, Path.GetFileName(filePath));
 
                 using Stream source = reader.OpenFile(filePath, FileMode.Open);
                 using FileStream dest = File.Create(destPath);
 
-                CopyWithProgress(source, dest, ref copiedBytes, totalBytes, progress);
+                await CopyWithProgress(source, dest, state, totalBytes, progress, cancellationToken);
             }
 
             foreach (string subDir in reader.GetDirectories(sourceDir))
             {
-                ExtractDirectory(
+                await ExtractDirectory(
                     reader, subDir,
                     Path.Combine(destDir, Path.GetFileName(subDir)),
-                    ref copiedBytes, totalBytes, progress);
+                    state, totalBytes, progress, cancellationToken);
             }
         }
 
-        private static void CopyWithProgress(Stream source, Stream dest, ref long copiedBytes, long totalBytes, IProgress<IsoExtractionProgress>? progress)
+        private static async Task CopyWithProgress(Stream source, Stream dest, ExtractionState state, long totalBytes, IProgress<IsoExtractionProgress>? progress, CancellationToken cancellationToken)
         {
             const int bufferSize = 4 * 1024 * 1024; // 4 MB
             byte[] buffer = new byte[bufferSize];
             var lastReport = DateTime.MinValue;
 
             int bytesRead;
-            while ((bytesRead = source.Read(buffer, 0, buffer.Length)) > 0)
+            while (true)
             {
-                dest.Write(buffer, 0, bytesRead);
-                copiedBytes += bytesRead;
+                cancellationToken.ThrowIfCancellationRequested();
+                bytesRead = await source.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
+                if (bytesRead <= 0)
+                {
+                    break;
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+                await dest.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
+                state.CopiedBytes += bytesRead;
 
                 var now = DateTime.UtcNow;
                 if (progress is not null && (now - lastReport).TotalMilliseconds >= 100)
                 {
-                    progress.Report(new IsoExtractionProgress(copiedBytes, totalBytes));
+                    progress.Report(new IsoExtractionProgress(state.CopiedBytes, totalBytes));
                     lastReport = now;
                 }
             }
 
-            progress?.Report(new IsoExtractionProgress(copiedBytes, totalBytes));
+            progress?.Report(new IsoExtractionProgress(state.CopiedBytes, totalBytes));
+        }
+
+        private sealed class ExtractionState
+        {
+            public long CopiedBytes { get; set; }
         }
 
         private static long GetTotalSize(UdfReader reader, string dir)

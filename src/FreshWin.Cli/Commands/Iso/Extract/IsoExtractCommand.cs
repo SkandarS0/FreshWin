@@ -9,9 +9,9 @@ using System.ComponentModel;
 namespace FreshWin.Cli.Commands.Iso.Extract
 {
     [Description("Extracts an ISO file to a specified directory")]
-    internal class IsoExtractCommand : Command<IsoExtractCommandSettings>
+    internal class IsoExtractCommand : AsyncCommand<IsoExtractCommandSettings>
     {
-        protected override int Execute(CommandContext context, IsoExtractCommandSettings settings, CancellationToken cancellationToken)
+        protected override async Task<int> ExecuteAsync(CommandContext context, IsoExtractCommandSettings settings, CancellationToken cancellationToken)
         {
             if (!settings.IsoPath.Exists)
             {
@@ -49,12 +49,12 @@ namespace FreshWin.Cli.Commands.Iso.Extract
                 settings.DestinationPath.Create();
             }
 
-            AnsiConsole.Progress().Start(ctx =>
+            await AnsiConsole.Progress().StartAsync(async ctx =>
             {
                 var task = ctx.AddTask("Extracting ISO");
                 var progress = new Progress<IsoExtractionProgress>(p => task.Value = p.Percent);
 
-                settings.IsoPath.ExtractIsoToDirectory(settings.DestinationPath, progress);
+                await settings.IsoPath.ExtractIsoToDirectory(settings.DestinationPath, progress, cancellationToken);
             });
 
             return 0;
