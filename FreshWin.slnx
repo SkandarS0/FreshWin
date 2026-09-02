@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FreshWin.Backup/FreshWin.Backup.csproj" />
+    <Project Path="src/FreshWin.Cli/FreshWin.Cli.csproj" />
+    <Project Path="src/FreshWin.Deployment/FreshWin.Deployment.csproj" />
+  </Folder>
+</Solution>
