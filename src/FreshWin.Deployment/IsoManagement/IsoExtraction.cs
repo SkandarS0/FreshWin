@@ -9,7 +9,7 @@ namespace FreshWin.Deployment.IsoManagement
             using FileStream isoStream = File.OpenRead(isoPath);
             using UdfReader reader = new(isoStream);
 
-            long totalBytes = GetTotalSize(reader, "");
+            long totalBytes = GetTotalSize(reader, "", cancellationToken);
             var state = new ExtractionState();
 
             await ExtractDirectory(reader, "", destination, state, totalBytes, progress, overwriteExistingFiles, cancellationToken);
@@ -24,7 +24,11 @@ namespace FreshWin.Deployment.IsoManagement
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                string destPath = Path.Combine(destDir, Path.GetFileName(filePath));
+                string fileName = Path.GetFileName(filePath);
+                if (!IsValidPathComponent(fileName))
+                    continue;
+
+                string destPath = Path.Combine(destDir, fileName);
                 long expectedLength = reader.GetFileLength(filePath);
 
                 if (!overwriteExistingFiles && File.Exists(destPath))
@@ -40,9 +44,13 @@ namespace FreshWin.Deployment.IsoManagement
 
             foreach (string subDir in reader.GetDirectories(sourceDir))
             {
+                string dirName = Path.GetFileName(subDir);
+                if (!IsValidPathComponent(dirName))
+                    continue;
+
                 await ExtractDirectory(
                     reader, subDir,
-                    Path.Combine(destDir, Path.GetFileName(subDir)),
+                    Path.Combine(destDir, dirName),
                     state, totalBytes, progress, overwriteExistingFiles, cancellationToken);
             }
         }
@@ -95,10 +103,25 @@ namespace FreshWin.Deployment.IsoManagement
             public long CopiedBytes { get; set; }
         }
 
-        private static long GetTotalSize(UdfReader reader, string dir)
+        private static bool IsValidPathComponent(string pathComponent)
         {
+            // Reject empty strings, relative path indicators, and names containing path separators
+            return !string.IsNullOrEmpty(pathComponent)
+                && pathComponent != "."
+                && pathComponent != ".."
+                && !pathComponent.Contains(Path.DirectorySeparatorChar)
+                && !pathComponent.Contains(Path.AltDirectorySeparatorChar);
+        }
+
+        private static long GetTotalSize(UdfReader reader, string dir, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
             long size = reader.GetFiles(dir).Sum(reader.GetFileLength);
-            return size + reader.GetDirectories(dir).Sum(sub => GetTotalSize(reader, sub));
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return size + reader.GetDirectories(dir).Sum(sub => GetTotalSize(reader, sub, cancellationToken));
         }
     }
 }
