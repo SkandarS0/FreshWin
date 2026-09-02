@@ -25,11 +25,9 @@ namespace FreshWin.Deployment.IsoManagement
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string destPath = Path.Combine(destDir, Path.GetFileName(filePath));
-
                 using Stream source = reader.OpenFile(filePath, FileMode.Open);
-                using FileStream dest = File.Open(destPath, overwriteExistingFiles ? FileMode.Create : FileMode.CreateNew, FileAccess.Write, FileShare.None);
 
-                await CopyWithProgress(source, dest, state, totalBytes, progress, cancellationToken);
+                await ExtractFileTransactional(source, destPath, state, totalBytes, progress, overwriteExistingFiles, cancellationToken);
             }
 
             foreach (string subDir in reader.GetDirectories(sourceDir))
@@ -38,6 +36,29 @@ namespace FreshWin.Deployment.IsoManagement
                     reader, subDir,
                     Path.Combine(destDir, Path.GetFileName(subDir)),
                     state, totalBytes, progress, overwriteExistingFiles, cancellationToken);
+            }
+        }
+
+        private static async Task ExtractFileTransactional(Stream source, string destPath, ExtractionState state, long totalBytes, IProgress<IsoExtractionProgress>? progress, bool overwriteExistingFiles, CancellationToken cancellationToken)
+        {
+            string tempPath = destPath + ".tmp-" + Guid.NewGuid().ToString("N");
+
+            try
+            {
+                using (FileStream dest = File.Open(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    await CopyWithProgress(source, dest, state, totalBytes, progress, cancellationToken);
+                }
+
+                File.Move(tempPath, destPath, overwriteExistingFiles);
+            }
+            catch
+            {
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+                throw;
             }
         }
 
