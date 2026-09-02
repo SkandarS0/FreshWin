@@ -40,7 +40,9 @@ namespace FreshWin.Cli.Commands.Iso.Extract
         {
             if (!settings.IsoPath.Exists)
             {
-                throw new FileNotFoundException($"The specified file does not exist: {settings.IsoPath.FullName}");
+                AnsiConsole.MarkupLine($"[red]Extraction cancelled — ISO file does not exist:[/] [yellow]{Markup.Escape(settings.IsoPath.FullName)}[/]");
+                exitCode = 1;
+                return false;
             }
 
             if (settings.IsoPath.IsNotIsoUdf())
