@@ -25,9 +25,17 @@ namespace FreshWin.Deployment.IsoManagement
                 cancellationToken.ThrowIfCancellationRequested();
 
                 string destPath = Path.Combine(destDir, Path.GetFileName(filePath));
-                using Stream source = reader.OpenFile(filePath, FileMode.Open);
+                long expectedLength = reader.GetFileLength(filePath);
 
-                await ExtractFileTransactional(source, destPath, state, totalBytes, progress, overwriteExistingFiles, cancellationToken);
+                if (!overwriteExistingFiles && File.Exists(destPath))
+                {
+                    state.CopiedBytes += expectedLength;
+                    progress?.Report(new IsoExtractionProgress(state.CopiedBytes, totalBytes));
+                    continue;
+                }
+
+                using Stream source = reader.OpenFile(filePath, FileMode.Open);
+                await ExtractFileTransactional(source, destPath, expectedLength, state, totalBytes, progress, overwriteExistingFiles, cancellationToken);
             }
 
             foreach (string subDir in reader.GetDirectories(sourceDir))
@@ -39,7 +47,7 @@ namespace FreshWin.Deployment.IsoManagement
             }
         }
 
-        private static async Task ExtractFileTransactional(Stream source, string destPath, ExtractionState state, long totalBytes, IProgress<IsoExtractionProgress>? progress, bool overwriteExistingFiles, CancellationToken cancellationToken)
+        private static async Task ExtractFileTransactional(Stream source, string destPath, long expectedLength, ExtractionState state, long totalBytes, IProgress<IsoExtractionProgress>? progress, bool overwriteExistingFiles, CancellationToken cancellationToken)
         {
             string tempPath = destPath + ".tmp-" + Guid.NewGuid().ToString("N");
 
@@ -54,31 +62,20 @@ namespace FreshWin.Deployment.IsoManagement
             }
             catch
             {
-                if (File.Exists(tempPath))
-                {
-                    File.Delete(tempPath);
-                }
+                File.Delete(tempPath);
                 throw;
             }
         }
 
         private static async Task CopyWithProgress(Stream source, Stream dest, ExtractionState state, long totalBytes, IProgress<IsoExtractionProgress>? progress, CancellationToken cancellationToken)
         {
-            const int bufferSize = 4 * 1024 * 1024; // 4 MB
+            const int bufferSize = 4 * 1024 * 1024;
             byte[] buffer = new byte[bufferSize];
             var lastReport = DateTime.MinValue;
 
             int bytesRead;
-            while (true)
+            while ((bytesRead = await source.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken)) > 0)
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                bytesRead = await source.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken);
-                if (bytesRead <= 0)
-                {
-                    break;
-                }
-
-                cancellationToken.ThrowIfCancellationRequested();
                 await dest.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken);
                 state.CopiedBytes += bytesRead;
 

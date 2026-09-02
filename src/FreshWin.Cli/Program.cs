@@ -1,6 +1,13 @@
 ﻿using FreshWin.Cli.Commands.Iso.Extract;
 using Spectre.Console.Cli;
 
+var cts = new CancellationTokenSource();
+Console.CancelKeyPress += (sender, e) =>
+{
+    e.Cancel = true;
+    cts.Cancel();
+};
+
 var app = new CommandApp();
 app.Configure(config =>
 {
@@ -16,4 +23,4 @@ app.Configure(config =>
     });
 });
 
-return await app.RunAsync(args);
+return await app.RunAsync(args, cts.Token);
