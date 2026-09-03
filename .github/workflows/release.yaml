@@ -23,7 +23,8 @@ jobs:
         run: |
           git fetch origin main
 
-          TAG=${GITHUB_REF#refs/tags/v}
+          FULL_TAG=${GITHUB_REF#refs/tags/}
+          TAG=${FULL_TAG#v}
           CORE=${TAG%%-*}
 
           if [[ "$TAG" == *-* ]]; then
@@ -46,6 +47,26 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "core=$CORE" >> "$GITHUB_OUTPUT"
           echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+          echo "full_tag=$FULL_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build raw commit log
+        id: commits
+        shell: bash
+        run: |
+          git fetch --tags --force
+
+          PREV_TAG=$(git tag --sort=-creatordate | grep -v "^${{ steps.version.outputs.full_tag }}$" | head -n1)
+
+          {
+            echo "log<<EOF"
+            echo "## Commits"
+            if [[ -n "$PREV_TAG" ]]; then
+              git log "${PREV_TAG}..${{ steps.version.outputs.full_tag }}" --oneline
+            else
+              git log "${{ steps.version.outputs.full_tag }}" --oneline
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -68,6 +89,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           name: v${{ steps.version.outputs.version }}
+          body: ${{ steps.commits.outputs.log }}
           files: publish-output/fwin.exe
           generate_release_notes: true
           prerelease: ${{ steps.version.outputs.prerelease }}
