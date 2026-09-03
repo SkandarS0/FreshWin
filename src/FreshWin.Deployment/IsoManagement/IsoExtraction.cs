@@ -39,7 +39,7 @@ namespace FreshWin.Deployment.IsoManagement
                 }
 
                 using Stream source = reader.OpenFile(filePath, FileMode.Open);
-                await ExtractFileTransactional(source, destPath, expectedLength, state, totalBytes, progress, overwriteExistingFiles, cancellationToken);
+                await ExtractFileTransactional(source, destPath, state, totalBytes, progress, overwriteExistingFiles, cancellationToken);
             }
 
             foreach (string subDir in reader.GetDirectories(sourceDir))
@@ -55,7 +55,7 @@ namespace FreshWin.Deployment.IsoManagement
             }
         }
 
-        private static async Task ExtractFileTransactional(Stream source, string destPath, long expectedLength, ExtractionState state, long totalBytes, IProgress<IsoExtractionProgress>? progress, bool overwriteExistingFiles, CancellationToken cancellationToken)
+        private static async Task ExtractFileTransactional(Stream source, string destPath, ExtractionState state, long totalBytes, IProgress<IsoExtractionProgress>? progress, bool overwriteExistingFiles, CancellationToken cancellationToken)
         {
             string tempPath = destPath + ".tmp-" + Guid.NewGuid().ToString("N");
 
