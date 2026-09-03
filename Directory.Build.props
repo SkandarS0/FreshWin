@@ -1,0 +1,19 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <Version>0.0.1</Version>
+    <AssemblyVersion>0.0.1.0</AssemblyVersion>
+    <FileVersion>0.0.1.0</FileVersion>
+
+    <Authors>SkandarS0</Authors>
+    <Company>Skandar Souissi</Company>
+    <Copyright>Copyright © 2026 Skandar</Copyright>
+
+    <RepositoryUrl>https://github.com/SkandarS0/FreshWin</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/SkandarS0/FreshWin</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+</Project>

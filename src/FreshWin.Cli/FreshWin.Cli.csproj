@@ -2,11 +2,10 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<AssemblyTitle>fwin</AssemblyTitle>
-		<TargetFramework>net10.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<Version>0.0.0.1</Version>
+		<AssemblyName>fwin</AssemblyName>
+		<RootNamespace>FreshWin.Cli</RootNamespace>
+		<Product>FreshWin</Product>
+		<Description>An all-in-one utility to speed up Windows 11 fresh installs, "back up, customize image, restore".</Description>
 	</PropertyGroup>
 
 	<ItemGroup>
