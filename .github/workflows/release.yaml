@@ -73,4 +73,4 @@ jobs:
           files: publish-output/fwin.exe
           generate_release_notes: true
           prerelease: ${{ steps.version.outputs.prerelease }}
-          body_append: false
+          append_body: false
