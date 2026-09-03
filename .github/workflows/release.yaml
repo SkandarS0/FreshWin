@@ -21,41 +21,29 @@ jobs:
         id: version
         shell: bash
         run: |
-          git fetch origin main
-
           FULL_TAG=${GITHUB_REF#refs/tags/}
           TAG=${FULL_TAG#v}
           CORE=${TAG%%-*}
 
           if [[ "$TAG" == *-* ]]; then
-            SUFFIX="-${TAG#*-}"
-          else
-            SUFFIX=""
-          fi
-
-          if git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
-            PRERELEASE=false
-          else
             PRERELEASE=true
-            if [[ -z "$SUFFIX" ]]; then
-              SUFFIX="-alpha"
-            fi
+          else
+            PRERELEASE=false
           fi
 
-          VERSION="${CORE}${SUFFIX}"
-
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
           echo "core=$CORE" >> "$GITHUB_OUTPUT"
           echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
-          echo "full_tag=$FULL_TAG" >> "$GITHUB_OUTPUT"
 
-      - name: Create suffixed tag if needed
-        if: ${{ steps.version.outputs.full_tag != format('v{0}', steps.version.outputs.version) }}
+      - name: Guard against off-main stable tags
+        if: steps.version.outputs.prerelease == 'false'
         shell: bash
         run: |
-          NEW_TAG="v${{ steps.version.outputs.version }}"
-          git tag "$NEW_TAG" "$GITHUB_SHA"
-          git push origin "$NEW_TAG"
+          git fetch origin main
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/main || {
+            echo "::error::Tag $GITHUB_REF looks like a stable release but is not on main. Use a -suffix or tag from main."
+            exit 1
+          }
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -83,8 +71,3 @@ jobs:
           generate_release_notes: true
           prerelease: ${{ steps.version.outputs.prerelease }}
           append_body: false
-
-      - name: Remove original plain tag
-        if: ${{ steps.version.outputs.full_tag != format('v{0}', steps.version.outputs.version) }}
-        shell: bash
-        run: git push origin --delete ${{ steps.version.outputs.full_tag }}
