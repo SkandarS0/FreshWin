@@ -49,6 +49,14 @@ jobs:
           echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
           echo "full_tag=$FULL_TAG" >> "$GITHUB_OUTPUT"
 
+      - name: Create suffixed tag if needed
+        if: ${{ steps.version.outputs.full_tag != format('v{0}', steps.version.outputs.version) }}
+        shell: bash
+        run: |
+          NEW_TAG="v${{ steps.version.outputs.version }}"
+          git tag "$NEW_TAG" "$GITHUB_SHA"
+          git push origin "$NEW_TAG"
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
@@ -69,8 +77,14 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
+          tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
           files: publish-output/fwin.exe
           generate_release_notes: true
           prerelease: ${{ steps.version.outputs.prerelease }}
           append_body: false
+
+      - name: Remove original plain tag
+        if: ${{ steps.version.outputs.full_tag != format('v{0}', steps.version.outputs.version) }}
+        shell: bash
+        run: git push origin --delete ${{ steps.version.outputs.full_tag }}
