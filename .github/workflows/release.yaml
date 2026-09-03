@@ -55,7 +55,7 @@ jobs:
         run: |
           git fetch --tags --force
 
-          PREV_TAG=$(git tag --sort=-creatordate | grep -v "^${{ steps.version.outputs.full_tag }}$" | head -n1)
+          PREV_TAG=$(git tag --sort=-creatordate | grep -v "^${{ steps.version.outputs.full_tag }}$" | head -n1 || true)
 
           {
             echo "log<<EOF"
