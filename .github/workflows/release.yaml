@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -48,7 +48,7 @@ jobs:
           echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -64,12 +64,8 @@ jobs:
           -p:FileVersion=${{ steps.version.outputs.core }}.0
           -o publish-output
 
-      - name: Rename output
-        shell: bash
-        run: mv publish-output/FreshWin.Cli.exe publish-output/fwin.exe
-
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: v${{ steps.version.outputs.version }}
           files: publish-output/fwin.exe
