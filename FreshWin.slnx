@@ -1,4 +1,8 @@
 <Solution>
+<Folder Name="/.github/" />
+  <Folder Name="/.github/workflows/">
+    <File Path="release.yaml" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
   </Folder>

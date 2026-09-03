@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract version and determine prerelease status
+        id: version
+        shell: bash
+        run: |
+          git fetch origin main
+
+          TAG=${GITHUB_REF#refs/tags/v}
+          CORE=${TAG%%-*}
+
+          if [[ "$TAG" == *-* ]]; then
+            SUFFIX="-${TAG#*-}"
+          else
+            SUFFIX=""
+          fi
+
+          if git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            PRERELEASE=false
+          else
+            PRERELEASE=true
+            if [[ -z "$SUFFIX" ]]; then
+              SUFFIX="-alpha"
+            fi
+          fi
+
+          VERSION="${CORE}${SUFFIX}"
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "core=$CORE" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish
+        run: >
+          dotnet publish src/FreshWin.Cli
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:AssemblyVersion=${{ steps.version.outputs.core }}.0
+          -p:FileVersion=${{ steps.version.outputs.core }}.0
+          -o publish-output
+
+      - name: Rename output
+        shell: bash
+        run: mv publish-output/FreshWin.Cli.exe publish-output/fwin.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.version.outputs.version }}
+          files: publish-output/fwin.exe
+          generate_release_notes: true
+          prerelease: ${{ steps.version.outputs.prerelease }}
