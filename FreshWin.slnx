@@ -1,12 +1,12 @@
 <Solution>
-<Folder Name="/.github/" />
-  <Folder Name="/.github/workflows/">
-    <File Path="release.yaml" />
+  <Folder Name="/Github Workflows/">
+    <File Path=".github/workflows/release.yaml" />
   </Folder>
+
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
   </Folder>
-  <Folder Name="/src/">
+  <Folder Name="/Source Projects/">
     <Project Path="src/FreshWin.Backup/FreshWin.Backup.csproj" />
     <Project Path="src/FreshWin.Cli/FreshWin.Cli.csproj" />
     <Project Path="src/FreshWin.Deployment/FreshWin.Deployment.csproj" />
