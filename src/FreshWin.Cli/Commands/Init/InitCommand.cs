@@ -30,6 +30,12 @@ namespace FreshWin.Cli.Commands.Init
                 return 1;
             }
 
+            if (File.Exists(projectRoot))
+            {
+                AnsiConsole.MarkupLine($"[red]A file with the name '{Markup.Escape(settings.Name)}' already exists.[/]");
+                return 1;
+            }
+
             ProjectLayoutWriter.Materialize(ProjectLayout.Root, projectRoot);
 
             AnsiConsole.MarkupLine($"[green]Initialized project '{Markup.Escape(settings.Name)}' at {Markup.Escape(projectRoot)}[/]");
