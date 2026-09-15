@@ -12,6 +12,16 @@ namespace FreshWin.Cli.Commands.Init
         protected override async Task<int> ExecuteAsync(CommandContext context, InitCommandSettings settings, CancellationToken cancellationToken)
         {
             var root = settings.ResolveRoot();
+            if (string.IsNullOrWhiteSpace(settings.Name)
+                || settings.Name is "." or ".."
+                || settings.Name.Contains('/')
+                || settings.Name.Contains('\\')
+                || settings.Name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+            {
+                AnsiConsole.MarkupLine("[red]Project name must be a valid single directory name.[/]");
+                return 1;
+            }
+
             var projectRoot = Path.Combine(root.FullName, "Projects", settings.Name);
 
             if (Directory.Exists(projectRoot))
