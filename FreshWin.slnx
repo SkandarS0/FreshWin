@@ -2,13 +2,13 @@
   <Folder Name="/Github Workflows/">
     <File Path=".github/workflows/release.yaml" />
   </Folder>
-
   <Folder Name="/Solution Items/">
     <File Path="Directory.Build.props" />
   </Folder>
   <Folder Name="/Source Projects/">
     <Project Path="src/FreshWin.Backup/FreshWin.Backup.csproj" />
     <Project Path="src/FreshWin.Cli/FreshWin.Cli.csproj" />
+    <Project Path="src/FreshWin.Core/FreshWin.Core.csproj" Id="4aaf7091-f752-47d4-ac66-3735fc70d977" />
     <Project Path="src/FreshWin.Deployment/FreshWin.Deployment.csproj" />
   </Folder>
 </Solution>

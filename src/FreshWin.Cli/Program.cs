@@ -1,4 +1,5 @@
-﻿using FreshWin.Cli.Commands.Iso.Extract;
+﻿using FreshWin.Cli.Commands.Init;
+using FreshWin.Cli.Commands.Iso.Extract;
 using Spectre.Console.Cli;
 
 var cts = new CancellationTokenSource();
@@ -13,8 +14,11 @@ app.Configure(config =>
 {
     config
     .SetApplicationName("fwin")
-    .UseAssemblyInformationalVersion()
-    .AddBranch("deploy", deploy =>
+    .UseAssemblyInformationalVersion();
+
+    config.AddCommand<InitCommand>("init").WithExample(["init", "MyProject"]);
+
+    config.AddBranch("deploy", deploy =>
     {
         deploy.AddBranch("iso", iso =>
         {
