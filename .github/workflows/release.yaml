@@ -50,7 +50,7 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Publish
+      - name: Publish x64
         run: >
           dotnet publish src/FreshWin.Cli
           -c Release
@@ -60,14 +60,34 @@ jobs:
           -p:Version=${{ steps.version.outputs.version }}
           -p:AssemblyVersion=${{ steps.version.outputs.core }}.0
           -p:FileVersion=${{ steps.version.outputs.core }}.0
-          -o publish-output
+          -o publish-output\win-x64
+
+      - name: Publish ARM64
+        run: >
+          dotnet publish src/FreshWin.Cli
+          -c Release
+          -r win-arm64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:Version=${{ steps.version.outputs.version }}
+          -p:AssemblyVersion=${{ steps.version.outputs.core }}.0
+          -p:FileVersion=${{ steps.version.outputs.core }}.0
+          -o publish-output\win-arm64
+
+      - name: Package release archives
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish-output\win-x64\* -DestinationPath fwin-${{ steps.version.outputs.version }}-win-x64.zip
+          Compress-Archive -Path publish-output\win-arm64\* -DestinationPath fwin-${{ steps.version.outputs.version }}-win-arm64.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.version.outputs.version }}
           name: v${{ steps.version.outputs.version }}
-          files: publish-output/fwin.exe
+          files: |
+            fwin-${{ steps.version.outputs.version }}-win-x64.zip
+            fwin-${{ steps.version.outputs.version }}-win-arm64.zip
           generate_release_notes: true
           prerelease: ${{ steps.version.outputs.prerelease }}
           append_body: false
