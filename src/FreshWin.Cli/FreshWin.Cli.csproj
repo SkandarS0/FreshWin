@@ -14,6 +14,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\FreshWin.Backup\FreshWin.Backup.csproj" />
+		<ProjectReference Include="..\FreshWin.Core\FreshWin.Core.csproj" />
 		<ProjectReference Include="..\FreshWin.Deployment\FreshWin.Deployment.csproj" />
 	</ItemGroup>
 
