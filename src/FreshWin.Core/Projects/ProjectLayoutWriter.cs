@@ -4,9 +4,11 @@
     {
         public static void Materialize(IEnumerable<ProjectNode> nodes, string basePath)
         {
-            foreach (var (relativePath, node) in ProjectLayoutWalker.Walk(nodes))
+            Directory.CreateDirectory(basePath);
+
+            foreach ((string relativePath, var node) in ProjectLayoutWalker.Walk(nodes))
             {
-                var path = Path.Combine(basePath, relativePath);
+                string path = Path.Combine(basePath, relativePath);
 
                 switch (node)
                 {

@@ -7,15 +7,17 @@
         {
             foreach (var node in nodes)
             {
-                var relativePath = string.IsNullOrEmpty(prefix)
+                string relativePath = string.IsNullOrEmpty(prefix)
                     ? node.Name
                     : Path.Combine(prefix, node.Name);
 
                 yield return (relativePath, node);
 
-                if (node is ProjectDirectoryNode dir)
-                    foreach (var item in Walk(dir.Children, relativePath))
-                        yield return item;
+                if (node is not ProjectDirectoryNode dir)
+                    continue;
+
+                foreach (var item in Walk(dir.Children, relativePath))
+                    yield return item;
             }
         }
     }
