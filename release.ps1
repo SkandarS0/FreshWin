@@ -4,8 +4,8 @@
   Release helper for FreshWin.
 .DESCRIPTION
   main is protected, so a release takes two runs:
-    ./release.ps1 0.1.0   bump the version on a release branch and open a PR
-    ./release.ps1 -Tag    once the PR is merged, tag main and push the tag
+    ./scripts/release.ps1 0.1.0   bump the version on a release branch and open a PR
+    ./scripts/release.ps1 -Tag    once the PR is merged, tag main and push the tag
   Pushing the tag starts release.yaml. The tag name is read from Cargo.toml,
   so it cannot disagree with the crate version.
   The release commit and the tag are always signed (git commit -S, git tag -s),
@@ -78,13 +78,13 @@ function Start-Release([string]$New) {
     }
 
     Sync-Main
-    Assert-CanSign
 
     $current = Get-CrateVersion
     $tagName = "v$New"
     $branch = "release/$tagName"
     if ($New -eq $current) { throw "Version is already $current." }
     if (git tag -l $tagName) { throw "Tag $tagName already exists." }
+    Assert-CanSign
 
     Confirm-Action "Release $current -> $New (PR from $branch)?"
 
@@ -103,7 +103,6 @@ function Start-Release([string]$New) {
 # Run 2: tag the merged release commit on main and push the tag.
 function Publish-Tag {
     Sync-Main
-    Assert-CanSign
 
     $tagName = "v$(Get-CrateVersion)"
     if (git tag -l $tagName) { throw "Tag $tagName already exists." }
@@ -114,6 +113,7 @@ function Publish-Tag {
     if ($subject -notmatch "^$expected( \(#\d+\))?$") {
         throw "HEAD is not the $tagName release commit ('$subject'). Merge the release PR first."
     }
+    Assert-CanSign
 
     Confirm-Action "Tag $(git rev-parse --short HEAD) as $tagName and push it (starts the release)?"
 
