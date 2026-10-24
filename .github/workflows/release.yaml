@@ -25,6 +25,8 @@ jobs:
           fetch-depth: 0
 
       - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          cache-key: ${{ matrix.target }}
 
       - name: Verify tag is on main
         shell: bash
