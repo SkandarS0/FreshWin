@@ -4,8 +4,8 @@
   Release helper for FreshWin.
 .DESCRIPTION
   main is protected, so a release takes two runs:
-    ./scripts/release.ps1 0.1.0   bump the version on a release branch and open a PR
-    ./scripts/release.ps1 -Tag    once the PR is merged, tag main and push the tag
+    ./release.ps1 0.1.0   bump the version on a release branch and open a PR
+    ./release.ps1 -Tag    once the PR is merged, tag main and push the tag
   Pushing the tag starts release.yaml. The tag name is read from Cargo.toml,
   so it cannot disagree with the crate version.
   The release commit and the tag are always signed (git commit -S, git tag -s),
@@ -94,7 +94,7 @@ function Start-Release([string]$New) {
     Exec { git add Cargo.toml Cargo.lock }
     Exec { git commit -S -m "chore(release): $tagName" --quiet }
     Exec { git push -u origin $branch --quiet }
-    Exec { gh pr create --base main --title "chore(release): $tagName" --body "Bump version to $New." }
+    Exec { gh pr create --label release --base main --title "chore(release): $tagName" --body "Bump version to $New." }
     Exec { git switch main --quiet }
 
     Write-Host 'Merge the PR, then run: ./release.ps1 -Tag'
