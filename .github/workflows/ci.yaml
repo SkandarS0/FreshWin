@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [ main ]
   push:
-    branches: [main]
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -15,24 +15,39 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_TOOLCHAIN: 1.99.1
 
 jobs:
-  fmt:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Install toolchain
-        run: rustup toolchain install
-      - run: cargo fmt --all --check
-
   check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format check
+        run: cargo fmt --all --check
+
+      - name: Lint check
+        run: cargo clippy --workspace --all-features --all-targets --locked -- -D warnings
+
+  test:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Install toolchain
-        run: rustup toolchain install
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_TOOLCHAIN }}
+
       - uses: Swatinem/rust-cache@v2
-      - name: Clippy
-        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
       - name: Test
-        run: cargo test --workspace --locked
+        run: cargo test --workspace --locked --all-features
