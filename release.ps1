@@ -92,9 +92,9 @@ function Start-Release([string]$New) {
     Set-CrateVersion $New
     Exec { cargo update --workspace --quiet }   # refresh Cargo.lock without touching dependencies
     Exec { git add Cargo.toml Cargo.lock }
-    Exec { git commit -S -m "chore: release $tagName" --quiet }
+    Exec { git commit -S -m "chore(release): $tagName" --quiet }
     Exec { git push -u origin $branch --quiet }
-    Exec { gh pr create --base main --title "chore: release $tagName" --body "Bump version to $New." }
+    Exec { gh pr create --base main --title "chore(release): $tagName" --body "Bump version to $New." }
     Exec { git switch main --quiet }
 
     Write-Host 'Merge the PR, then run: ./release.ps1 -Tag'
@@ -109,7 +109,7 @@ function Publish-Tag {
     if (git tag -l $tagName) { throw "Tag $tagName already exists." }
 
     # Only tag the release commit itself (squash merge may append " (#123)").
-    $expected = [regex]::Escape("chore: release $tagName")
+    $expected = [regex]::Escape("chore(release): $tagName")
     $subject = git log -1 --format=%s
     if ($subject -notmatch "^$expected( \(#\d+\))?$") {
         throw "HEAD is not the $tagName release commit ('$subject'). Merge the release PR first."
