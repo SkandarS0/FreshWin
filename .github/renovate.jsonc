@@ -1,0 +1,49 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "helpers:pinGitHubActionDigests"],
+
+  "timezone": "Africa/Tunis",
+  "schedule": ["before 6am on monday"],
+  "minimumReleaseAge": "3 days",
+
+  // Cargo: in-range updates only change Cargo.lock, so the x.y minimums
+  // in Cargo.toml are left alone.
+  "cargo": { "rangeStrategy": "update-lockfile" },
+
+  // The cooldown does not apply to lock file maintenance.
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 6am on the first day of the month"]
+  },
+
+  // Real CVEs skip the cooldown.
+  "vulnerabilityAlerts": {
+    "minimumReleaseAge": "0 days",
+    "labels": ["security"]
+  },
+
+  "packageRules": [
+    {
+      "description": "Group non-major Cargo updates",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "cargo non-major"
+    },
+    {
+      "description": "Majors wait longer",
+      "matchUpdateTypes": ["major"],
+      "minimumReleaseAge": "7 days"
+    },
+    {
+      "description": "Group GitHub Actions updates",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    },
+    {
+      "description": "Cargo.lock refresh gets its own PR",
+      "matchManagers": ["cargo"],
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "groupName": "Cargo lock file maintenance"
+    }
+  ]
+}
