@@ -1,0 +1,11 @@
+# Rust build artifacts
+/target/
+
+# IDE/editor files
+/.idea/
+*.iml
+.vscode/
+
+# OS-generated files
+Thumbs.db
+Desktop.ini
