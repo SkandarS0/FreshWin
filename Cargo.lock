@@ -112,7 +112,7 @@ checksum = "00d174d5400e5e8fd687ad1049e2f578285fa914201b1af7e8b112a4546bd826"
 
 [[package]]
 name = "fwin"
-version = "0.0.0"
+version = "0.0.1-alpha"
 dependencies = [
  "anyhow",
  "clap",
@@ -123,7 +123,7 @@ dependencies = [
 
 [[package]]
 name = "fwin-backup"
-version = "0.0.0"
+version = "0.0.1-alpha"
 dependencies = [
  "serde",
  "thiserror",
