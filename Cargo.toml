@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/backup", "crates/cli"]
 
 [workspace.package]
-version = "0.0.1-alpha"
+version = "0.0.0"
 edition = "2024"
 repository = "https://github.com/SkandarS0/FreshWin"
 publish = false
