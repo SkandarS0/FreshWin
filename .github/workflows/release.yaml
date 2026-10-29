@@ -9,6 +9,7 @@ permissions:
 
 env:
   BIN_NAME: fwin
+  BIN_CRATE_NAME: fwin-cli
 
 jobs:
   build:
@@ -39,9 +40,9 @@ jobs:
         shell: pwsh
         run: |
           $metadata = cargo metadata --format-version 1 --no-deps | ConvertFrom-Json
-          $pkg = $metadata.packages | Where-Object { $_.name -eq $env:BIN_NAME }
+          $pkg = $metadata.packages | Where-Object { $_.name -eq $env:BIN_CRATE_NAME }
           if (-not $pkg) {
-            throw "Package '$env:BIN_NAME' not found in cargo metadata."
+            throw "Package '$env:BIN_CRATE_NAME' not found in cargo metadata."
           }
           $expectedTag = "v$($pkg.version)"
           if ($env:GITHUB_REF_NAME -ne $expectedTag) {
@@ -49,7 +50,7 @@ jobs:
           }
 
       - name: Build
-        run: cargo build --release --locked -p ${{ env.BIN_NAME }} --target ${{ matrix.target }}
+        run: cargo build --release --locked -p ${{ env.BIN_CRATE_NAME  }} --target ${{ matrix.target }}
 
       - name: Zip
         run: |
